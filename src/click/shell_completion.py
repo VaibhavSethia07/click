@@ -14,6 +14,7 @@ from .core import Option
 from .core import Parameter
 from .core import ParameterSource
 from .utils import echo
+from security import safe_command
 
 
 def shell_complete(
@@ -311,8 +312,7 @@ class BashComplete(ShellComplete):
         if bash_exe is None:
             match = None
         else:
-            output = subprocess.run(
-                [bash_exe, "--norc", "-c", 'echo "${BASH_VERSION}"'],
+            output = safe_command.run(subprocess.run, [bash_exe, "--norc", "-c", 'echo "${BASH_VERSION}"'],
                 stdout=subprocess.PIPE,
             )
             match = re.search(r"^(\d+)\.(\d+)\.\d+", output.stdout.decode())

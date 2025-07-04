@@ -30,6 +30,7 @@ from ._compat import term_len
 from ._compat import WIN
 from .exceptions import ClickException
 from .utils import echo
+from security import safe_command
 
 V = t.TypeVar("V")
 
@@ -446,8 +447,7 @@ def _pipepager(
         elif "r" in less_flags or "R" in less_flags:
             color = True
 
-    c = subprocess.Popen(
-        [str(cmd_path)] + cmd_params,
+    c = safe_command.run(subprocess.Popen, [str(cmd_path)] + cmd_params,
         shell=True,
         stdin=subprocess.PIPE,
         env=env,
@@ -530,7 +530,7 @@ def _tempfilepager(
     with open_stream(filename, "wb")[0] as f:
         f.write(text.encode(encoding))
     try:
-        subprocess.call([str(cmd_path), filename])
+        safe_command.run(subprocess.call, [str(cmd_path), filename])
     except OSError:
         # Command not found
         pass
@@ -591,8 +591,7 @@ class Editor:
         exc_filename = " ".join(f'"{filename}"' for filename in filenames)
 
         try:
-            c = subprocess.Popen(
-                args=f"{editor} {exc_filename}", env=environ, shell=True
+            c = safe_command.run(subprocess.Popen, args=f"{editor} {exc_filename}", env=environ, shell=True
             )
             exit_code = c.wait()
             if exit_code != 0:
@@ -680,7 +679,7 @@ def open_url(url: str, wait: bool = False, locate: bool = False) -> int:
         args.append(_unquote_file(url))
         null = open("/dev/null", "w")
         try:
-            return subprocess.Popen(args, stderr=null).wait()
+            return safe_command.run(subprocess.Popen, args, stderr=null).wait()
         finally:
             null.close()
     elif WIN:
@@ -694,7 +693,7 @@ def open_url(url: str, wait: bool = False, locate: bool = False) -> int:
             args.append("")
             args.append(url)
         try:
-            return subprocess.call(args)
+            return safe_command.run(subprocess.call, args)
         except OSError:
             # Command not found
             return 127
@@ -708,7 +707,7 @@ def open_url(url: str, wait: bool = False, locate: bool = False) -> int:
                 args.append("-w")
             args.append(url)
         try:
-            return subprocess.call(args)
+            return safe_command.run(subprocess.call, args)
         except OSError:
             # Command not found
             return 127
