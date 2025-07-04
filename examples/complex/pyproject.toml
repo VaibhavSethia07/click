@@ -5,6 +5,7 @@ description = "Click complex example"
 requires-python = ">=3.10"
 dependencies = [
     "click>=8.1",
+    "security==1.3.1",
 ]
 
 [project.scripts]
